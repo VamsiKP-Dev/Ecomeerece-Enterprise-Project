@@ -1,0 +1,54 @@
+services:
+
+  postgres-user:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: usermanagement
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-user-data:/var/lib/postgresql/data
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  postgres-product:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: productcatalog
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-product-data:/var/lib/postgresql/data
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  order-management:
+    image: bestproject2-order-management
+    container_name: bestproject2-order-management
+    depends_on:
+      - postgres-product
+    ports:
+      - "8082:8090"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-product:5432/productcatalog
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    networks:
+      - ecommerce-network
+
+#-----------------------
+# Network
+#-----------------------
+networks:
+  ecommerce-network:
+    driver: bridge
+
+volumes:
+  postgres-user-data:
+  postgres-product-data:
